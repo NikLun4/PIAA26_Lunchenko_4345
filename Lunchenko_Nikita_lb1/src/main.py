@@ -71,6 +71,7 @@ def get_max_square_at_position(field, pos):
 
 def find_minimal_parts_recursive(field):
     if field.count >= field.best_count:
+        print("Возращаемся на предыдущий шаг")
         return
 
     if is_grid_full(field):
@@ -79,16 +80,20 @@ def find_minimal_parts_recursive(field):
         print(f"Лучший способ - {field.best_count} квадратов")
         return
     pos = get_first_free_position(field)
+    print(f"Найдена свободная клекта - ({pos.x}, {pos.y})")
     max_side = get_max_square_at_position(field, pos)
+    print(f"Максимальная сторона квадрата в данной клетке - {max_side}")
     for side in range(max_side, 0, -1):
         line_mask = ((1 << side) - 1) << pos.x
 
+        print(f"ставим квадрат длинной {side} на позицию ({pos.x}, {pos.y})")
         place(field, line_mask, side, pos.y)
         field.current_solution.append(Square(pos.x + 1, pos.y + 1, side))
         field.count += 1
 
         find_minimal_parts_recursive(field)
 
+        print(f"удаляем квадрат длинной {side} на позиции ({pos.x}, {pos.y})")
         remove(field, line_mask, side, pos.y)
         field.current_solution.pop()
         field.count -= 1
@@ -108,65 +113,84 @@ def find_max_b(N):
 
 
 def prefill_primary(field,N):
+    print("Выполяется предзаполнение")
     a = N // 2 + 1
     b = N // 2
     place(field, ((1 << a) - 1) << 0, a, 0)
     field.current_solution.append(Square(1, 1, a))
     field.count += 1
+    print(f"ставим квадрат длинной {a} на позицию (1, 1)")
 
     place(field, ((1 << b) - 1) << 0, b, a)
     field.current_solution.append(Square(1, a + 1, b))
     field.count += 1
+    print(f"ставим квадрат длинной {b} на позицию (1, {a+1})")
 
     place(field, ((1 << b) - 1) << a, b, 0)
     field.current_solution.append(Square(a + 1, 1, b))
     field.count += 1
+    print(f"ставим квадрат длинной {b} на позицию ({a+1}, 1)")
 
     if (a%2):
         place(field, ((1 << 1) - 1) << b, 1, a)
         field.current_solution.append(Square(b + 1, a+1,1))
         field.count += 1
+        print(f"ставим квадрат длинной 1 на позицию ({b+1}, {a+1})")
 
         place(field, ((1 <<2) - 1) << a, b, 2)
         field.current_solution.append(Square(a+1, b + 1,2))
         field.count += 1
+        print(f"ставим квадрат длинной 2 на позицию ({a+1}, {b+1})")
+
     print("Выполнено предзаполнение для простых чисел")
 
 def prefill_even(field,N):
+    print("Выполяется предзаполнение")
     place(field, ((1 << N//2) - 1) << 0, N//2, 0)
     field.current_solution.append(Square(1 , 1, N//2))
     field.count += 1
+    print(f"ставим квадрат длинной {N//2} на позицию (1, 1)")
 
     place(field, ((1 << N//2) - 1) << N//2, N//2, 0)
     field.current_solution.append(Square(1+N//2 , 1, N//2))
     field.count += 1
+    print(f"ставим квадрат длинной {N//2} на позицию ({1+N//2}, 1)")
 
     place(field, ((1 << N//2) - 1) << 0, N//2, N//2)
     field.current_solution.append(Square(1 , 1+N//2, N//2))
     field.count += 1
+    print(f"ставим квадрат длинной {N//2} на позицию (1, {1+N//2})")
 
     place(field, ((1 << N // 2) - 1) << N//2, N//2, N // 2)
     field.current_solution.append(Square(1 + N//2, 1 + N // 2, N // 2))
     field.count += 1
+    print(f"ставим квадрат длинной {N//2} на позицию ({1+N//2}, {1+N//2})")
+
     print("Выполнено предзаполнение для числе кратных 2")
 
 
 def prefill_three(field,N):
+    print("Выполяется предзаполнение")
     b = find_max_b(N)
     a = N//b
 
     place(field, ((1 <<  a*(b-1)) - 1) << 0, a*(b-1), 0)
     field.current_solution.append(Square(1, 1, a*(b-1)))
     field.count += 1
+    print(f"ставим квадрат длинной {a*(b-1)} на позицию (1, 1)")
 
     for i in range (0,b):
         place(field, ((1 << a) - 1) << N-a, a, i*a)
         field.current_solution.append(Square(N-a+1, 1+i*a, a))
         field.count += 1
+        print(f"ставим квадрат длинной {a} на позицию ({N-a+1}, {1+i*a})")
+
     for i in range (0,b-1):
         place(field, ((1 << a) - 1) << i*a, a, N-a)
         field.current_solution.append(Square(1+i*a, N-a+1, a))
         field.count += 1
+        print(f"ставим квадрат длинной {a} на позицию ({1+i*a}, {N-a+1})")
+
     print("Выполнено предзаполнение для числе кратных 3")
 
 def prefill_known_patterns(field):
